@@ -1,0 +1,4 @@
+dill==0.3.7
+multiprocess==0.70.15
+multiprocessing-logging==0.3.4
+taskmap==0.0.6
