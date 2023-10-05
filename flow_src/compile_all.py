@@ -17,7 +17,7 @@ COMMAND_TEMPLATE_FULL_FLOW = "make -C /home/lledoux/Documents/PhD/SUF/OpenROAD-f
 # todo(lledoux): create commands that generates tables(CSV,TXT,TEX) from reports (area, cells, power)
 
 for p in PDKS:
-    for dc in division_configs:
+    for dc in division_configs.keys():
         fct_name = "fct_rtl2gds_{}_{}".format(p,dc)
         exec(
             'def {}():'.format(fct_name) +
