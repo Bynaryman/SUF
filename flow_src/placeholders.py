@@ -3,7 +3,7 @@ placeholders_config = {
             '[[CORE_UTILIZATION]]': "35"
         },
         'nangate45': {
-            '[[CORE_UTILIZATION]]': "30"
+            '[[CORE_UTILIZATION]]': "28"
         },
         'asap7': {
             '[[CORE_UTILIZATION]]': "35"
@@ -25,18 +25,18 @@ placeholders_constraint = {
             '[[PERIOD]]': "2000"
         },
         'nangate45': {
-            '[[PERIOD]]': "2000"
+            '[[PERIOD]]': "60"
         },
         'asap7': {
-            '[[PERIOD]]': "2000"
+            '[[PERIOD]]': "300"
         },
         'sky130hd': {
-            '[[PERIOD]]': "2000"
+            '[[PERIOD]]': "100"
         },
         'sky130hs': {
-            '[[PERIOD]]': "2000"
+            '[[PERIOD]]': "100"
         },
         'gf180': {
-            '[[PERIOD]]': "2000"
+            '[[PERIOD]]': "15"
         }
 }

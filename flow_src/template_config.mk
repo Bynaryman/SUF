@@ -5,6 +5,8 @@ export VERILOG_FILES          = $(sort $(wildcard ./designs/src/divisions/$(DESI
 export SDC_FILE               = ./designs/$(PLATFORM)/divisions/$(DESIGN_NAME)/constraint.sdc
 
 export CORE_UTILIZATION       = [[CORE_UTILIZATION]]
+export SYNTH_HIERARCHICAL = 1
+export ADDER_MAP_FILE :=
 #export CORE_ASPECT_RATIO      = 1 1
 #export DIE_AREA               = 0 0 16.2 16.2
 #export CORE_AREA              = 1.08 1.08 15.12 15.12
