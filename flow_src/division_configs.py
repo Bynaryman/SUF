@@ -27,41 +27,41 @@ base_configs= {
         "category": "IEEE754",
         "mantissa_size": "52"
     },
-    "ieee754SP": {
-        "bitwidth": "32",
-        "category": "IEEE754",
-        "mantissa_size": "23"
-    },
-    "ieee754HP": {
-        "bitwidth": "16",
-        "category": "IEEE754",
-        "mantissa_size": "10"
-    },
-    "bf16": {
-        "bitwidth": "16",
-        "category": "BrainFloat",
-        "mantissa_size": "7"
-    },
-    "posit64": {
-        "bitwidth": "64",
-        "category": "Posit",
-        "mantissa_size": "59"
-    },
-    "posit32": {
-        "bitwidth": "32",
-        "category": "Posit",
-        "mantissa_size": "27"
-    },
-    "posit16": {
-        "bitwidth": "16",
-        "category": "Posit",
-        "mantissa_size": "11"
-    },
-    "posit8": {
-        "bitwidth": "8",
-        "category": "Posit",
-        "mantissa_size": "3"
-    },
+    # "ieee754SP": {
+    #     "bitwidth": "32",
+    #     "category": "IEEE754",
+    #     "mantissa_size": "23"
+    # },
+    # "ieee754HP": {
+    #     "bitwidth": "16",
+    #     "category": "IEEE754",
+    #     "mantissa_size": "10"
+    # },
+    # "bf16": {
+    #     "bitwidth": "16",
+    #     "category": "BrainFloat",
+    #     "mantissa_size": "7"
+    # },
+    # "posit64": {
+    #     "bitwidth": "64",
+    #     "category": "Posit",
+    #     "mantissa_size": "59"
+    # },
+    # "posit32": {
+    #     "bitwidth": "32",
+    #     "category": "Posit",
+    #     "mantissa_size": "27"
+    # },
+    # "posit16": {
+    #     "bitwidth": "16",
+    #     "category": "Posit",
+    #     "mantissa_size": "11"
+    # },
+    # "posit8": {
+    #     "bitwidth": "8",
+    #     "category": "Posit",
+    #     "mantissa_size": "3"
+    # },
     # "e4m3": {
     #     "bitwidth": "8",
     #     "category": "Nvidia",
@@ -107,7 +107,7 @@ division_configs = {}
 for base_name, base_config in base_configs.items():
     for algorithm in algorithms:
         if algorithm["name"] == "Non_Restoring":
-            algorithm["versions"] = ["baseline"] + [f"serial_adder_{i}" for i in range(1, int(base_config["mantissa_size"]) + 1)]
+            algorithm["versions"] = ["baseline"] + [f"serial_adder_{i}" for i in range(1, int(base_config["mantissa_size"]) + 3)] # +4 because adder needs extra bit for GRS
             #algorithm["versions"] = ["baseline"] + [f"serial_adder_{i}" for i in [1,int(base_config["mantissa_size"])]]
 
         for version in algorithm["versions"]:
