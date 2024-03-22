@@ -1,6 +1,8 @@
 # SUF
 
-## TL;DR
+## Overview
+
+### TL;DR
 Are you interested by OpenROAD or the evolving domain of modern, open-source, rapid EDA tools for silicon design?
 This project operates as an enhancement graft that augments OpenROAD's capabilities.
 By cloning this repository, you will obtain both OpenROAD and a suite of Python tools adept at managing the process from input generation to generating detailed output plots in a parallel fashion.
@@ -13,6 +15,9 @@ For a swift overview after cloning and setting up, as detailed in the subsequent
 6. `./run_example` to generate HDL for various designs with different PDKs and initiate the OpenROAD flow concurrently.
 7. `./plot_example` to reveal the plotting capabilities.
 
+## Graphically Speaking
+Overall, SUF framework is best represented with the following Figure
+![SUF Overview](pictures/SUF.png)
 
 ## Organization Hierarchy
 
