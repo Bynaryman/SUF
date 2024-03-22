@@ -1,3 +1,15 @@
 [submodule "OpenROAD-flow-scripts"]
 	path = OpenROAD-flow-scripts
 	url = https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts
+[submodule "graft_road/translation_tools/yosys"]
+	path = graft_road/translation_tools/yosys
+	url = https://github.com/YosysHQ/yosys
+[submodule "graft_road/translation_tools/ghdl"]
+	path = graft_road/translation_tools/ghdl
+	url = https://github.com/ghdl/ghdl
+[submodule "graft_road/translation_tools/ghdl-yosys-plugin"]
+	path = graft_road/translation_tools/ghdl-yosys-plugin
+	url = https://github.com/ghdl/ghdl-yosys-plugin
+[submodule "graft_road/translation_tools/vh2v"]
+	path = graft_road/translation_tools/vh2v
+	url = https://github.com/Bynaryman/vh2v
