@@ -80,6 +80,8 @@ For those interested in citing this work in academic studies, please use the fol
 }
 ```
 
+Or with the following text:
+
 - **_Louis Ledoux_** and Marc Casas. (2024). _"The Grafted Superset Approach: Bridging Python to Silicon with Asynchronous Compilation and Beyond."_ Presented at the 2024 4th Workshop on Open-Source Design Automation (OSDA), International Conference on Design, Automation and Test in Europe (DATE), March 25, Valencia, Spain. Available online soon.
 Or in text:
 
