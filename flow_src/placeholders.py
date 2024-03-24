@@ -25,7 +25,7 @@ placeholders_constraint = {
             '[[PERIOD]]': "2000"
         },
         'nangate45': {
-            '[[PERIOD]]': "60"
+            '[[PERIOD]]': "600"
         },
         'asap7': {
             '[[PERIOD]]': "300"

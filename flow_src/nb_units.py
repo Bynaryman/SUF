@@ -311,7 +311,7 @@ def data_to_plot(data_dict, metric, unit):
         adder_sizes = [get_adder_size_from_name(design) for design in data_dict]
 
         scatter = ax.scatter(adder_sizes, values, c=adder_sizes, cmap=cmap, norm=norm, edgecolor='none')
-        ax.set_xscale('log')  # Set logarithmic scale for x-axis
+        #ax.set_xscale('log')  # Set logarithmic scale for x-axis
 
         ax.set_ylabel(f"{tech_node}")
         #ax.set_title(f"{metric.capitalize()} across {tech_node.capitalize()} nodes", fontsize=16)
@@ -361,7 +361,7 @@ def data_to_plot(data_dict):
                 category = get_category(design)
                 arith_bitwidth = int(division_configs[design]["bitwidth"])
                 category_bitwidth_key = f"{category}_{arith_bitwidth}"
-                baseline_area = safe_float(tech_data[tech_node].get("area", None))
+                baseline_area = safe_float(tech_data[tech_node].get("power", None))
                 baseline_areas[tech_node][category_bitwidth_key] = baseline_area
 
         # Second loop for plotting
@@ -370,7 +370,7 @@ def data_to_plot(data_dict):
                 category = get_category(design)
                 arith_bitwidth = int(division_configs[design]["bitwidth"])
                 category_bitwidth_key = f"{category}_{arith_bitwidth}"
-                current_area = safe_float(tech_data[tech_node].get("area", None))
+                current_area = safe_float(tech_data[tech_node].get("power", None))
 
                 # Get the baseline area for the current category and bitwidth key
                 baseline_area = baseline_areas[tech_node].get(category_bitwidth_key, None)

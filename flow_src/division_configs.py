@@ -22,16 +22,16 @@ base_configs= {
     #     "category": "IEEE754",
     #     "mantissa_size": "112"
     # },
-    "ieee754DP": {
-        "bitwidth": "64",
-        "category": "IEEE754",
-        "mantissa_size": "52"
-    },
-    # "ieee754SP": {
-    #     "bitwidth": "32",
-    #     "category": "IEEE754",
-    #     "mantissa_size": "23"
-    # },
+    #"ieee754DP": {
+    #    "bitwidth": "64",
+    #    "category": "IEEE754",
+    #    "mantissa_size": "52"
+    #},
+     "ieee754SP": {
+         "bitwidth": "32",
+         "category": "IEEE754",
+         "mantissa_size": "23"
+     },
     # "ieee754HP": {
     #     "bitwidth": "16",
     #     "category": "IEEE754",
@@ -107,6 +107,7 @@ division_configs = {}
 for base_name, base_config in base_configs.items():
     for algorithm in algorithms:
         if algorithm["name"] == "Non_Restoring":
+            #algorithm["versions"] = ["baseline"] + [f"serial_adder_{i}" for i in range(1, int(base_config["mantissa_size"]) + 3)] # +4 because adder needs extra bit for GRS
             algorithm["versions"] = ["baseline"] + [f"serial_adder_{i}" for i in range(1, int(base_config["mantissa_size"]) + 3)] # +4 because adder needs extra bit for GRS
             #algorithm["versions"] = ["baseline"] + [f"serial_adder_{i}" for i in [1,int(base_config["mantissa_size"])]]
 

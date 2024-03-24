@@ -13,7 +13,7 @@ dependencies_push = {}
 
 # todo(lledoux): be careful with this path
 COMMAND_TEMPLATE_IMAGE = "make -C /home/lledoux/Documents/PhD/SUF/OpenROAD-flow-scripts/flow/ DESIGN_CONFIG=./designs/{}/divisions/{}/config.mk gui_final"
-COMMAND_CP_WITH_NAME = "mv /tmp/tmp.png /tmp/{}_{}.png"
+COMMAND_CP_WITH_NAME = "mv /tmp/tmp.png /home/lledoux/Documents/PhD/gallery/{}_{}.png"
 
 for p in PDKS:
     for dc in division_configs.keys():
