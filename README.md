@@ -1,5 +1,20 @@
 # SUF
 
+## Table of Contents
+- [Overview](#overview)
+  - [TL;DR](#tldr)
+  - [Graphically Speaking](#graphically-speaking)
+  - [Organization Hierarchy](#organization-hierarchy)
+- [Installation Instructions](#installation-instructions)
+- [How Does It Work?](#how-does-it-work-)
+- [Poster Presentation](#poster-presentation)
+  - [Poster Preview](#poster-preview)
+  - [How to Cite](#how-to-cite)
+- [How to Contribute?](#how-to-contribute)
+  - [Pull Requests](#pull-requests)
+- [License](#license)
+- [Authors](#authors)
+
 ## Overview
 
 ### TL;DR
@@ -40,10 +55,6 @@ The main initial feature is the parallel and asynchronous nature of SUF. With a 
 
 ## Poster Presentation
 
-Our work has been proudly presented at the 2024 4th Workshop on Open-Source Design Automation (OSDA), a significant event held in conjunction with the International Conference on Design, Automation and Test in Europe (DATE). This presentation took place on March 25, 2024, at the illustrious Palacio De Congresos Valencia (Valencia Conference Centre - VCC) in Valencia, Spain. The details of our presentation, including a preview of the poster and a citation for academic use, are provided below.
-
-### Presentation Details
-
 We had the opportunity to present our work at the 2024 4th Workshop on Open-Source Design Automation (OSDA), alongside the highly regarded International Conference on Design, Automation and Test in Europe (DATE). This event took place on March 25, 2024, at the Palacio De Congresos Valencia (Valencia Conference Centre - VCC) in Valencia, Spain. Below, you'll find the details of our presentation, including a preview of the associated poster and guidelines for academic citation.
 
 ### Poster Preview
@@ -66,6 +77,10 @@ For those interested in citing this work in academic studies, please use the fol
   note={Available online soon.}
 }
 ```
+
+Or in text:
+
+Louis Ledoux and Marc Casas. (2024). The Grafted Superset Approach: Bridging Python to Silicon with Asynchronous Compilation and Beyond. Presented at the 2024 4th Workshop on Open-Source Design Automation (OSDA), International Conference on Design, Automation and Test in Europe (DATE), March 25, Valencia, Spain. Available online soon.
 
 ## Authors
 - Me / Bynaryman / Louis Ledoux [@Bynaryman](https://github.com/Bynaryman)
