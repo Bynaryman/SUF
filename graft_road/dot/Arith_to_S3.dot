@@ -1,0 +1,42 @@
+digraph Arith_to_S3
+{
+	//graph drawing options
+	label=Arith_to_S3;
+	labelloc=bottom;
+	labeljust=right;
+	ratio=auto;
+	nodesep=0.25;
+	ranksep=0.5;
+
+	//input/output signals of operator Arith_to_S3
+	arith_i__Arith_to_S3 [ label="arith_i\ndT = 0\n(0, 0)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=2 ];
+	S3_o__Arith_to_S3 [ label="S3_o\ndT = 0\n(0, 1.586e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=3 ];
+	{rank=same arith_i__Arith_to_S3};
+	{rank=same S3_o__Arith_to_S3};
+	//internal signals of operator Arith_to_S3
+	sign__Arith_to_S3 [ label="sign\ndT = 0\n(0, 0)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	exponent__Arith_to_S3 [ label="exponent\ndT = 0\n(0, 0)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	fraction__Arith_to_S3 [ label="fraction\ndT = 0\n(0, 0)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	isNaN__Arith_to_S3 [ label="isNaN\ndT = 1.043e-09\n(0, 1.043e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	isExpSubnormalZero__Arith_to_S3 [ label="isExpSubnormalZero\ndT = 1.043e-09\n(0, 1.043e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	implicit__Arith_to_S3 [ label="implicit\ndT = 5.43e-10\n(0, 1.586e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	final_scale__Arith_to_S3 [ label="final_scale\ndT = 5.43e-10\n(0, 1.586e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+
+	//subcomponents of operator Arith_to_S3
+
+	//input and internal signal connections of operator Arith_to_S3
+	arith_i__Arith_to_S3 -> sign__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	arith_i__Arith_to_S3 -> exponent__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	arith_i__Arith_to_S3 -> fraction__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	sign__Arith_to_S3 -> S3_o__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	exponent__Arith_to_S3 -> isNaN__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	exponent__Arith_to_S3 -> isExpSubnormalZero__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	exponent__Arith_to_S3 -> final_scale__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	fraction__Arith_to_S3 -> S3_o__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	isNaN__Arith_to_S3 -> S3_o__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	isExpSubnormalZero__Arith_to_S3 -> implicit__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	isExpSubnormalZero__Arith_to_S3 -> final_scale__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	implicit__Arith_to_S3 -> S3_o__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	final_scale__Arith_to_S3 -> S3_o__Arith_to_S3 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+}
+

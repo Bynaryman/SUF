@@ -11,8 +11,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable # for the size of colorm
 from matplotlib.ticker import FuncFormatter
 import matplotlib.ticker as ticker
 from matplotlib.gridspec import GridSpec
-from pdk_configs import PDKS
-from division_configs import division_configs
+
+from inputs.pdk_configs import PDKS
+from inputs.division_configs import division_configs
+from inputs.SA_LLMMMM_configs import total_configs
+
 import pprint
 import os
 import csv
@@ -20,8 +23,10 @@ import argparse
 import json
 from collections import defaultdict # to call append on None value of a key
 
-PATH_UNITS   =  "/home/lledoux/Documents/PhD/SUF/OpenROAD-flow-scripts/flow/logs/{}/{}/base/2_1_floorplan.json"
-PATH_RESULTS =  "/home/lledoux/Documents/PhD/SUF/OpenROAD-flow-scripts/flow/logs/{}/{}/base/6_report.json"
+from config import FLOW_DIR
+
+PATH_UNITS   =  f"{FLOW_DIR}/logs/{{}}/{{}}/base/2_1_floorplan.json"
+PATH_RESULTS =  f"{FLOW_DIR}/logs/{{}}/{{}}/base/6_report.json"
 
 
 # Figure width base on the column width of the Latex document.

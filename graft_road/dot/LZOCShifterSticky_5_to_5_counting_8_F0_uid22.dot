@@ -1,0 +1,53 @@
+digraph LZOCShifterSticky_5_to_5_counting_8_F0_uid22
+{
+	//graph drawing options
+	label=LZOCShifterSticky_5_to_5_counting_8_F0_uid22;
+	labelloc=bottom;
+	labeljust=right;
+	ratio=auto;
+	nodesep=0.25;
+	ranksep=0.5;
+
+	//input/output signals of operator LZOCShifterSticky_5_to_5_counting_8_F0_uid22
+	I__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="I\ndT = 0\n(0, 1.043e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=2 ];
+	OZb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="OZb\ndT = 0\n(0, 1.043e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=2 ];
+	Count__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="Count\ndT = 0\n(0, 4.03777e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=3 ];
+	O__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="O\ndT = 0\n(0, 4.58077e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=3 ];
+	Sticky__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="Sticky\ndT = 0\n(0, 0)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=3 ];
+	{rank=same I__LZOCShifterSticky_5_to_5_counting_8_F0_uid22, OZb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22};
+	{rank=same Count__LZOCShifterSticky_5_to_5_counting_8_F0_uid22, O__LZOCShifterSticky_5_to_5_counting_8_F0_uid22, Sticky__LZOCShifterSticky_5_to_5_counting_8_F0_uid22};
+	//internal signals of operator LZOCShifterSticky_5_to_5_counting_8_F0_uid22
+	level3__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="level3\ndT = 0\n(0, 1.043e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	sozb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="sozb\ndT = 0\n(0, 1.043e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	count2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="count2\ndT = 6.44423e-10\n(0, 1.68742e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="level2\ndT = 5.43e-10\n(0, 2.23042e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	count1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="count1\ndT = 6.32173e-10\n(0, 2.8626e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="level1\ndT = 5.43e-10\n(0, 3.4056e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	count0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="count0\ndT = 6.32173e-10\n(0, 4.03777e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="level0\ndT = 5.43e-10\n(0, 4.58077e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	sCount__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ label="sCount\ndT = 0\n(0, 4.03777e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+
+	//subcomponents of operator LZOCShifterSticky_5_to_5_counting_8_F0_uid22
+
+	//input and internal signal connections of operator LZOCShifterSticky_5_to_5_counting_8_F0_uid22
+	I__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> level3__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	OZb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> sozb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level3__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> count2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level3__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> level2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	sozb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> count2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	sozb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> count1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	sozb__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> count0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	count2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> level2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	count2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> sCount__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> count1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level2__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> level1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	count1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> level1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	count1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> sCount__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> count0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level1__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> level0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	count0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> level0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	count0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> sCount__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level0__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> O__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	sCount__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 -> Count__LZOCShifterSticky_5_to_5_counting_8_F0_uid22 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+}
+

@@ -2,17 +2,19 @@
 
 # Author: Ledoux Louis
 
-from scenario import Scenario
-from pdk_configs import PDKS
-from division_configs import division_configs
+from libs.scenario import Scenario
+from inputs.pdk_configs import PDKS
+from inputs.division_configs import division_configs
 import os
+
+from config import FLOW_DIR
 
 # define the actions to perform and their inter dependencies
 actions_push = {}
 dependencies_push = {}
 
 # todo(lledoux): be careful with this path
-COMMAND_TEMPLATE_FULL_FLOW = "make -C /home/lledoux/Documents/PhD/SUF/OpenROAD-flow-scripts/flow/ DESIGN_CONFIG=./designs/{}/divisions/{}/config.mk"
+COMMAND_TEMPLATE_FULL_FLOW = f"make -C {FLOW_DIR} DESIGN_CONFIG=./designs/{{}}/divisions/{{}}/config.mk"
 
 # todo(lledoux): create commands that generates tables(CSV,TXT,TEX) from reports (area, cells, power)
 

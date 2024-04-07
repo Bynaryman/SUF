@@ -1,0 +1,70 @@
+digraph RightShifterSticky16_by_max_16_F0_uid24
+{
+	//graph drawing options
+	label=RightShifterSticky16_by_max_16_F0_uid24;
+	labelloc=bottom;
+	labeljust=right;
+	ratio=auto;
+	nodesep=0.25;
+	ranksep=0.5;
+
+	//input/output signals of operator RightShifterSticky16_by_max_16_F0_uid24
+	X__RightShifterSticky16_by_max_16_F0_uid24 [ label="X\ndT = 0\n(0, 6.52031e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=2 ];
+	S__RightShifterSticky16_by_max_16_F0_uid24 [ label="S\ndT = 0\n(0, 5.97731e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=2 ];
+	padBit__RightShifterSticky16_by_max_16_F0_uid24 [ label="padBit\ndT = 0\n(0, 5.97731e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=2 ];
+	R__RightShifterSticky16_by_max_16_F0_uid24 [ label="R\ndT = 0\n(0, 7.60631e-09)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=3 ];
+	Sticky__RightShifterSticky16_by_max_16_F0_uid24 [ label="Sticky\ndT = 0\n(0, 1.20606e-08)", shape=box, color=black, style="bold, filled", fillcolor=coral, peripheries=3 ];
+	{rank=same X__RightShifterSticky16_by_max_16_F0_uid24, S__RightShifterSticky16_by_max_16_F0_uid24, padBit__RightShifterSticky16_by_max_16_F0_uid24};
+	{rank=same R__RightShifterSticky16_by_max_16_F0_uid24, Sticky__RightShifterSticky16_by_max_16_F0_uid24};
+	//internal signals of operator RightShifterSticky16_by_max_16_F0_uid24
+	ps__RightShifterSticky16_by_max_16_F0_uid24 [ label="ps\ndT = 0\n(0, 5.97731e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level5__RightShifterSticky16_by_max_16_F0_uid24 [ label="level5\ndT = 0\n(0, 6.52031e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	stk4__RightShifterSticky16_by_max_16_F0_uid24 [ label="stk4\ndT = 1.135e-09\n(0, 7.65531e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level4__RightShifterSticky16_by_max_16_F0_uid24 [ label="level4\ndT = 0\n(0, 6.52031e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	stk3__RightShifterSticky16_by_max_16_F0_uid24 [ label="stk3\ndT = 1.1105e-09\n(0, 8.76581e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level3__RightShifterSticky16_by_max_16_F0_uid24 [ label="level3\ndT = 5.43e-10\n(0, 7.06331e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	stk2__RightShifterSticky16_by_max_16_F0_uid24 [ label="stk2\ndT = 1.09825e-09\n(0, 9.86406e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level2__RightShifterSticky16_by_max_16_F0_uid24 [ label="level2\ndT = 0\n(0, 7.06331e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	stk1__RightShifterSticky16_by_max_16_F0_uid24 [ label="stk1\ndT = 1.09825e-09\n(0, 1.09623e-08)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level1__RightShifterSticky16_by_max_16_F0_uid24 [ label="level1\ndT = 5.43e-10\n(0, 7.60631e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	stk0__RightShifterSticky16_by_max_16_F0_uid24 [ label="stk0\ndT = 1.09825e-09\n(0, 1.20606e-08)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+	level0__RightShifterSticky16_by_max_16_F0_uid24 [ label="level0\ndT = 0\n(0, 7.60631e-09)", shape=box, color=black, style=filled, fillcolor=coral, peripheries=1 ];
+
+	//subcomponents of operator RightShifterSticky16_by_max_16_F0_uid24
+
+	//input and internal signal connections of operator RightShifterSticky16_by_max_16_F0_uid24
+	X__RightShifterSticky16_by_max_16_F0_uid24 -> level5__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	S__RightShifterSticky16_by_max_16_F0_uid24 -> ps__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	padBit__RightShifterSticky16_by_max_16_F0_uid24 -> level4__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	padBit__RightShifterSticky16_by_max_16_F0_uid24 -> level3__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	padBit__RightShifterSticky16_by_max_16_F0_uid24 -> level2__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	padBit__RightShifterSticky16_by_max_16_F0_uid24 -> level1__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	padBit__RightShifterSticky16_by_max_16_F0_uid24 -> level0__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> stk4__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> level4__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> stk3__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> level3__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> stk2__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> level2__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> stk1__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> level1__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> stk0__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	ps__RightShifterSticky16_by_max_16_F0_uid24 -> level0__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level5__RightShifterSticky16_by_max_16_F0_uid24 -> stk4__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level5__RightShifterSticky16_by_max_16_F0_uid24 -> level4__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	stk4__RightShifterSticky16_by_max_16_F0_uid24 -> stk3__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level4__RightShifterSticky16_by_max_16_F0_uid24 -> stk3__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level4__RightShifterSticky16_by_max_16_F0_uid24 -> level3__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	stk3__RightShifterSticky16_by_max_16_F0_uid24 -> stk2__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level3__RightShifterSticky16_by_max_16_F0_uid24 -> stk2__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level3__RightShifterSticky16_by_max_16_F0_uid24 -> level2__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	stk2__RightShifterSticky16_by_max_16_F0_uid24 -> stk1__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level2__RightShifterSticky16_by_max_16_F0_uid24 -> stk1__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level2__RightShifterSticky16_by_max_16_F0_uid24 -> level1__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	stk1__RightShifterSticky16_by_max_16_F0_uid24 -> stk0__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level1__RightShifterSticky16_by_max_16_F0_uid24 -> stk0__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level1__RightShifterSticky16_by_max_16_F0_uid24 -> level0__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	stk0__RightShifterSticky16_by_max_16_F0_uid24 -> Sticky__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+	level0__RightShifterSticky16_by_max_16_F0_uid24 -> R__RightShifterSticky16_by_max_16_F0_uid24 [ arrowhead=normal, arrowsize=1.0, arrowtail=normal, color=black, dir=forward  ];
+}
+
