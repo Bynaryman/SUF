@@ -302,19 +302,26 @@ class SimpleFlowExperiment:
     # ------------------------------------------------------------------ #
     def _emit_metrics(self, rows: List[Dict[str, object]]) -> pd.DataFrame:
         df = pd.DataFrame(rows)
+        if df.empty:
+            return df
         with self.metrics_path.open("w") as handle:
             for row in rows:
                 handle.write(json.dumps(row) + "\n")
         return df
 
     def _terminal_table(self, df: pd.DataFrame) -> str:
+        if df.empty:
+            return "No metrics (possibly dry-run)."
         cols = ["pdk", "clock_ns", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
-        df_disp = df[cols].copy()
+        df_disp = df.reindex(columns=cols)
         return df_disp.to_string(index=False)
 
     def _latex_table(self, df: pd.DataFrame) -> str:
+        if df.empty:
+            return "% No metrics (possibly dry-run)."
         cols = ["pdk", "clock_ns", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
-        return df[cols].to_latex(index=False, float_format="%.3f")
+        df_disp = df.reindex(columns=cols)
+        return df_disp.to_latex(index=False, float_format="%.3f")
 
     def _plot(self, df: pd.DataFrame) -> None:
         if df.empty:
@@ -340,40 +347,44 @@ class SimpleFlowExperiment:
         """Execute the experiment using the Scenario scheduler."""
         self._link_design_sources()
 
+        # Pre-render configs/SDCs and build case list upfront (avoid cross-process state)
+        self.cases = [
+            self._render_config_and_sdc(pdk, clk)
+            for pdk in self.pdks
+            for clk in self.clocks_ns
+        ]
+
+        if self.dry_run:
+            print("Dry run: planned flow commands")
+            for case in self.cases:
+                cmd = [
+                    "make",
+                    "-C",
+                    str(self.flow_root),
+                    f"DESIGN_CONFIG=./designs/{case.pdk}/{self.namespace}/{self.design_name}/config.mk",
+                ]
+                print(" ".join(cmd), f"(RUN_TAG={case.run_tag})")
+            return
+
         actions: Dict[str, object] = {}
         deps: Dict[str, List[str]] = {}
 
-        # Rendering actions
-        for pdk in self.pdks:
-            render_name = f"render_cfg_{pdk}"
-            actions[render_name] = partial(self._render_cases_for_pdk, pdk)
-            deps[render_name] = []
-
-        # Flow and metrics actions per case
-        for pdk in self.pdks:
-            for clk in self.clocks_ns:
-                run_tag = f"c{clk:.2f}".replace(".", "p")
-                case_name = f"{pdk}_{run_tag}"
-                flow_name = f"flow_{case_name}"
-                metrics_name = f"metrics_{case_name}"
-                actions[flow_name] = partial(self._run_flow_for_case, pdk, clk)
-                deps[flow_name] = [f"render_cfg_{pdk}"]
-
-                actions[metrics_name] = partial(self._collect_metrics_for_case, pdk, clk)
-                deps[metrics_name] = [flow_name]
+        # Flow actions per case (render already done)
+        for case in self.cases:
+            run_tag = case.run_tag
+            case_name = f"{case.pdk}_{run_tag}"
+            flow_name = f"flow_{case_name}"
+            actions[flow_name] = partial(self._run_flow_for_case, case.pdk, case.clock_ns)
+            deps[flow_name] = []
 
         scenario = Scenario(actions, deps, log=True)
         scenario.exec_once_sync_parallel(self.concurrency)
 
-        # Aggregate metrics
+        # Aggregate metrics (parsed in parent to avoid cross-process state)
         rows: List[Dict[str, object]] = []
         for case in self.cases:
-            row = {
-                "design": self.design_name,
-                "pdk": case.pdk,
-                "clock_ns": case.clock_ns,
-                **case.metrics,
-            }
+            metrics = {} if self.dry_run else self._parse_metrics(case)
+            row = {"design": self.design_name, "pdk": case.pdk, "clock_ns": case.clock_ns, **metrics}
             rows.append(row)
         df = self._emit_metrics(rows)
         print(self._terminal_table(df))
@@ -385,19 +396,9 @@ class SimpleFlowExperiment:
         # Plots (PNG + PGF)
         self._plot(df)
 
-    # Helpers used by Scenario
-    def _render_cases_for_pdk(self, pdk: str) -> None:
-        for clk in self.clocks_ns:
-            case = self._render_config_and_sdc(pdk, clk)
-            self.cases.append(case)
-
     def _run_flow_for_case(self, pdk: str, clk: float) -> None:
         case = next(fc for fc in self.cases if fc.pdk == pdk and abs(fc.clock_ns - clk) < 1e-6)
         self._run_flow(case)
-
-    def _collect_metrics_for_case(self, pdk: str, clk: float) -> None:
-        case = next(fc for fc in self.cases if fc.pdk == pdk and abs(fc.clock_ns - clk) < 1e-6)
-        case.metrics = self._parse_metrics(case)
 
 
 def _first_match(pattern: str, text: str) -> str | None:
