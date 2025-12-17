@@ -69,6 +69,8 @@ class SimpleFlowExperiment:
         flow_root: Path | None = None,
         output_root: Path | None = None,
         concurrency: int = 2,
+        dry_run: bool = False,
+        namespace: str = "suf",
     ) -> None:
         self.design_dir = design_dir.resolve()
         self.design_name = design_name
@@ -77,6 +79,8 @@ class SimpleFlowExperiment:
         self.density = density
         self.flow_root = flow_root if flow_root is not None else FLOW_ROOT
         self.concurrency = concurrency
+        self.dry_run = dry_run
+        self.namespace = namespace.strip("/ ")
 
         self.templates_dir = REPO_ROOT / "suf" / "templates"
 
@@ -96,8 +100,8 @@ class SimpleFlowExperiment:
     # Preparation
     # ------------------------------------------------------------------ #
     def _link_design_sources(self) -> None:
-        """Expose the RTL folder under flow/designs/src/<design_name> via symlinks."""
-        src_root = self.flow_root / "designs" / "src" / self.design_name
+        """Expose the RTL folder under flow/designs/src/<namespace>/<design_name> via symlinks."""
+        src_root = self.flow_root / "designs" / "src" / self.namespace / self.design_name
         src_root.mkdir(parents=True, exist_ok=True)
 
         for item in self.design_dir.glob("*.v"):
@@ -109,11 +113,11 @@ class SimpleFlowExperiment:
     def _render_config_and_sdc(self, pdk: str, clock_ns: float) -> FlowCase:
         """Render config.mk and constraint.sdc for a specific (pdk, clock) tuple."""
         util_percent, place_density = self._normalize_density(self.density)
-        design_dir = self.flow_root / "designs" / pdk / self.design_name
+        design_dir = self.flow_root / "designs" / pdk / self.namespace / self.design_name
         design_dir.mkdir(parents=True, exist_ok=True)
 
-        verilog_glob = f"./designs/src/{self.design_name}/*.v"
-        sdc_rel = Path("designs") / pdk / self.design_name / "constraint.sdc"
+        verilog_glob = f"./designs/src/{self.namespace}/{self.design_name}/*.v"
+        sdc_rel = Path("designs") / pdk / self.namespace / self.design_name / "constraint.sdc"
         sdc_path = design_dir / "constraint.sdc"
         config_path = design_dir / "config.mk"
 
@@ -176,11 +180,13 @@ class SimpleFlowExperiment:
             "make",
             "-C",
             str(self.flow_root),
-            f"DESIGN_CONFIG=./designs/{case.pdk}/{self.design_name}/config.mk",
+            f"DESIGN_CONFIG=./designs/{case.pdk}/{self.namespace}/{self.design_name}/config.mk",
         ]
         env = os.environ.copy()
         env["RUN_TAG"] = case.run_tag
         LOG.info("Running flow: %s", " ".join(cmd))
+        if self.dry_run:
+            return
         proc = subprocess.run(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if proc.returncode != 0:
             LOG.error("Flow failed for %s/%s: %s", case.pdk, case.run_tag, proc.stdout.decode())
@@ -190,7 +196,7 @@ class SimpleFlowExperiment:
     # Metrics parsing
     # ------------------------------------------------------------------ #
     def _metric_paths(self, case: FlowCase) -> Dict[str, Path]:
-        base = self.flow_root / "logs" / case.pdk / self.design_name / case.run_tag
+        base = self.flow_root / "logs" / case.pdk / self.namespace / self.design_name / case.run_tag
         return {
             "report": base / "6_report.json",
             "cts": base / "4_1_cts.json",
@@ -405,12 +411,14 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simple OpenROAD flow experiment driver.")
     parser.add_argument("--design-dir", type=Path, required=True, help="Path to directory containing Verilog sources.")
     parser.add_argument("--design-name", type=str, required=True, help="Design name/top module.")
+    parser.add_argument("--namespace", type=str, default="suf", help="Namespace under flow/designs to avoid collisions.")
     parser.add_argument("--pdks", nargs="+", default=["sky130hd", "asap7"], help="List of PDKs to target.")
     parser.add_argument("--clocks", nargs="+", type=float, default=[5.0, 2.5, 1.0], help="Clock periods (ns).")
     parser.add_argument("--density", type=float, default=0.60, help="Core utilization (0-1 or percent).")
     parser.add_argument("--concurrency", type=int, default=2, help="Parallel flows to run.")
     parser.add_argument("--flow-root", type=Path, default=None, help="Override FLOW_ROOT.")
     parser.add_argument("--output-root", type=Path, default=None, help="Override output directory.")
+    parser.add_argument("--dry-run", action="store_true", help="Print planned commands without running flows.")
     return parser.parse_args(argv)
 
 
@@ -427,6 +435,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         flow_root=args.flow_root,
         output_root=args.output_root,
         concurrency=args.concurrency,
+        dry_run=args.dry_run,
+        namespace=args.namespace,
     )
     exp.run()
 
