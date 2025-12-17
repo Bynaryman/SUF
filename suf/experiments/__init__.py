@@ -5,7 +5,7 @@ Imports are kept lazy to avoid double-import warnings when running modules via
 `python -m suf.experiments.<module>`.
 """
 
-__all__ = ["FlowCase", "RSCMShiftExperiment", "SimpleFlowExperiment"]
+__all__ = ["FlowCase", "RSCMShiftExperiment", "SimpleFlowExperiment", "SimpleFlowCase", "SimpleFlowMain"]
 
 
 def __getattr__(name):
@@ -17,4 +17,12 @@ def __getattr__(name):
         from .simple_flow_experiment import SimpleFlowExperiment
 
         return SimpleFlowExperiment
+    if name == "SimpleFlowCase":
+        from .simple_flow_helpers import FlowCase as SimpleFlowCase
+
+        return SimpleFlowCase
+    if name == "SimpleFlowMain":
+        from .simple_flow_experiment import main as SimpleFlowMain
+
+        return SimpleFlowMain
     raise AttributeError(f"module {__name__} has no attribute {name}")
