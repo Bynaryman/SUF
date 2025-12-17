@@ -30,12 +30,14 @@ def _parse_args(argv):
     p.add_argument("--flow-root", type=Path, default=None, help="Override FLOW_ROOT.")
     p.add_argument("--output-root", type=Path, default=None, help="Where to dump metrics/plots.")
     p.add_argument("--dry-run", action="store_true", help="Print planned actions, do not run.")
+    p.add_argument("--verbose", action="store_true", help="Enable verbose logging for Scenario/flows.")
     return p.parse_args(argv)
 
 
 def main(argv=None):
     args = _parse_args(argv or sys.argv[1:])
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=log_level, format="%(levelname)s %(message)s")
 
     design_name = args.design_name or args.design_dir.name
     flow_root = args.flow_root if args.flow_root is not None else FLOW_ROOT
@@ -120,7 +122,7 @@ def main(argv=None):
         print(pd.DataFrame(rows).sort_values(["pdk", "clock_ns"]).to_string(index=False))
         return
 
-    scenario = Scenario(actions, deps, log=True)
+    scenario = Scenario(actions, deps, log=args.verbose)
     scenario.exec_once_sync_parallel(args.concurrency)
 
 
