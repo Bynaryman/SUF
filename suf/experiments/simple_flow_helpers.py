@@ -199,7 +199,16 @@ def assign_metrics(flow_root: Path, experiment: str, design_name: str, case: Flo
         case.metrics = parse_metrics(flow_root, experiment, design_name, case)
         if not case.metrics:
             case.failed = True
-        LOG.info("Parsed metrics for %s/%s: keys=%s", case.pdk, case.run_tag, list(case.metrics.keys()))
+        LOG.info(
+            "Parsed metrics for %s/%s: gds_area=%s synth_area=%s wirelength=%s wns=%s tns=%s",
+            case.pdk,
+            case.run_tag,
+            case.metrics.get("gds_area"),
+            case.metrics.get("synth_area"),
+            case.metrics.get("wirelength"),
+            case.metrics.get("wns"),
+            case.metrics.get("tns"),
+        )
     except Exception as exc:
         case.failed = True
         LOG.error("Metrics parsing failed for %s/%s: %s", case.pdk, case.run_tag, exc)
