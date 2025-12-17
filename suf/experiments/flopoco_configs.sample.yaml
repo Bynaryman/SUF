@@ -1,0 +1,18 @@
+# Example Flopoco design list
+# Each entry needs:
+#   name:     design identifier (and top module name)
+#   operator: Flopoco operator to invoke
+#   params:   key/value pairs passed to Flopoco (converted to key=value)
+- name: fp_add16
+  operator: FPAdder
+  params:
+    wE: 8
+    wF: 23
+    frequency: 400
+
+- name: fp_mul16
+  operator: FPMultiplier
+  params:
+    wE: 8
+    wF: 23
+    frequency: 400

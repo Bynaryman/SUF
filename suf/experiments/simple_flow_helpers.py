@@ -300,7 +300,8 @@ def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: boo
     for col in required_cols:
         if col not in df.columns:
             df[col] = float("nan")
-    df = df[required_cols]
+    extra_cols = [c for c in df.columns if c not in required_cols]
+    df = df[required_cols + extra_cols]
     if df.empty or dry_run:
         return df
     with metrics_path.open("w") as handle:
