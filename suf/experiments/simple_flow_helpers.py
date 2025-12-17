@@ -160,14 +160,14 @@ def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_nam
         "-C",
         str(flow_root),
         f"DESIGN_CONFIG=./designs/{case.pdk}/{experiment}/{design_name}/{case.run_tag}/config.mk",
-        f"RUN_TAG={case.run_tag}",
+        f"FLOW_VARIANT={case.run_tag}",
     ]
 
 
 def run_flow(flow_root: Path, case: FlowCase, experiment: str, design_name: str, dry_run: bool) -> None:
     cmd = planned_command(flow_root, case, experiment, design_name)
     env = os.environ.copy()
-    env["RUN_TAG"] = case.run_tag
+    env["FLOW_VARIANT"] = case.run_tag
     LOG.info("Running flow: %s", " ".join(cmd))
     if dry_run:
         return
