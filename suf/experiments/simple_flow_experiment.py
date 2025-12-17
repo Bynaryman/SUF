@@ -21,7 +21,7 @@ from suf.experiments import simple_flow_helpers as helpers
 def _parse_args(argv):
     p = argparse.ArgumentParser(description="Simple OpenROAD flow experiment (Scenario actions for all steps).")
     p.add_argument("--design-dir", type=Path, required=True, help="Directory containing Verilog sources.")
-    p.add_argument("--design-name", type=str, required=True, help="Design name/top module.")
+    p.add_argument("--design-name", type=str, help="Design name/top module (defaults to folder name).")
     p.add_argument("--experiment", type=str, default="suf", help="Experiment namespace under flow/designs.")
     p.add_argument("--pdks", nargs="+", default=["sky130hd", "asap7"], help="PDKs to run.")
     p.add_argument("--clocks", nargs="+", type=float, default=[5.0, 2.5, 1.0], help="Clock periods (ns).")
@@ -37,14 +37,15 @@ def main(argv=None):
     args = _parse_args(argv or sys.argv[1:])
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
+    design_name = args.design_name or args.design_dir.name
     flow_root = args.flow_root if args.flow_root is not None else FLOW_ROOT
     output_root = args.output_root if args.output_root is not None else (GRAFT_ROAD_ROOT / "outputs" / args.experiment)
 
     planned_links, src_root = helpers.link_design_sources(
-        args.design_dir, flow_root, args.experiment, args.design_name, dry_run=args.dry_run
+        args.design_dir, flow_root, args.experiment, design_name, dry_run=args.dry_run
     )
     cases = helpers.plan_cases(
-        design_name=args.design_name,
+        design_name=design_name,
         experiment=args.experiment,
         pdks=args.pdks,
         clocks_ns=args.clocks,
@@ -84,14 +85,14 @@ def main(argv=None):
         deps[flow_name] = [write_cfg_name, write_sdc_name]
 
         actions[metrics_name] = partial(
-            helpers.assign_metrics, flow_root, args.experiment, args.design_name, case, args.dry_run
+            helpers.assign_metrics, flow_root, args.experiment, args.design_name or design_name, case, args.dry_run
         )
         deps[metrics_name] = [flow_name]
 
     def report_action():
         rows = []
         for case in cases:
-            rows.append({"design": args.design_name, "pdk": case.pdk, "clock_ns": case.clock_ns, **case.metrics})
+            rows.append({"design": design_name, "pdk": case.pdk, "clock_ns": case.clock_ns, **case.metrics})
         output_root.mkdir(parents=True, exist_ok=True)
         metrics_path = output_root / "metrics.jsonl"
         plots_dir = output_root / "plots"
