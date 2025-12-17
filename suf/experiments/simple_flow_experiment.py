@@ -12,11 +12,6 @@ import sys
 from pathlib import Path
 from functools import partial
 
-# Ensure repo root on sys.path for graft_road imports
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
 # Local imports
 from graft_road.libs.scenario import Scenario
 from suf import FLOW_ROOT, GRAFT_ROAD_ROOT
