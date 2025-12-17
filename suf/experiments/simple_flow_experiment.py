@@ -1,31 +1,20 @@
 #!/usr/bin/env python
-"""
-Thin Scenario-based experiment runner.
-
-This mirrors the short graft_road scripts: wire actions/deps, delegate work to helpers.
-"""
+"""Scenario-driven simple flow experiment with explicit actions."""
 from __future__ import annotations
 
 import argparse
 import logging
 import sys
-from pathlib import Path
 from functools import partial
+from pathlib import Path
 
-# Ensure repo root is on sys.path so graft_road imports resolve when executed as a script.
-THIS_DIR = Path(__file__).resolve().parent
-REPO_ROOT = THIS_DIR.parents[1]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-# Local imports
 from graft_road.libs.scenario import Scenario
 from suf import FLOW_ROOT, GRAFT_ROAD_ROOT
 from suf.experiments import simple_flow_helpers as helpers
 
 
 def _parse_args(argv):
-    p = argparse.ArgumentParser(description="Simple OpenROAD flow experiment (Scenario style).")
+    p = argparse.ArgumentParser(description="Simple OpenROAD flow experiment (Scenario actions for all steps).")
     p.add_argument("--design-dir", type=Path, required=True, help="Directory containing Verilog sources.")
     p.add_argument("--design-name", type=str, required=True, help="Design name/top module.")
     p.add_argument("--experiment", type=str, default="suf", help="Experiment namespace under flow/designs.")
@@ -35,7 +24,7 @@ def _parse_args(argv):
     p.add_argument("--concurrency", type=int, default=2, help="Parallel flows.")
     p.add_argument("--flow-root", type=Path, default=None, help="Override FLOW_ROOT.")
     p.add_argument("--output-root", type=Path, default=None, help="Where to dump metrics/plots.")
-    p.add_argument("--dry-run", action="store_true", help="Print planned commands, do not run.")
+    p.add_argument("--dry-run", action="store_true", help="Print planned actions, do not run.")
     return p.parse_args(argv)
 
 
@@ -49,7 +38,7 @@ def main(argv=None):
     planned_links, src_root = helpers.link_design_sources(
         args.design_dir, flow_root, args.experiment, args.design_name, dry_run=args.dry_run
     )
-    cases = helpers.render_cases(
+    cases = helpers.plan_cases(
         design_name=args.design_name,
         experiment=args.experiment,
         pdks=args.pdks,
@@ -57,50 +46,67 @@ def main(argv=None):
         density=args.density,
         flow_root=flow_root,
         templates_dir=Path(__file__).resolve().parents[1] / "templates",
-        dry_run=args.dry_run,
     )
 
-    if args.dry_run:
-        print("Dry run: planned flow commands")
-        print(f"Design: {args.design_name} | Experiment: {args.experiment} | Density: {args.density}")
-        print(f"PDKs: {', '.join(args.pdks)} | Clocks: {', '.join(str(c) for c in args.clocks)}")
-        print(f"[mkdir] {src_root}")
-        for case in cases:
-            print(f"[mkdir] {case.config_dir}")
-            print(f"[write] {case.config_path}")
-            print(f"[write] {case.sdc_path}")
-        for src, dst in planned_links:
-            print(f"[symlink] {src} -> {dst}")
-        for case in cases:
-            cmd = helpers.planned_command(flow_root, case, args.experiment, args.design_name)
-            print(f"[{case.pdk} @ {case.clock_ns}ns | run_tag={case.run_tag}] {' '.join(cmd)}")
-        return
-
-    # Build Scenario: one flow action per case
+    # Build actions graph
     actions = {}
     deps = {}
+
+    actions["mkdir_src"] = partial(helpers.ensure_dir, src_root, args.dry_run)
+    deps["mkdir_src"] = []
+
+    actions["symlink_sources"] = partial(helpers.create_symlinks, planned_links, args.dry_run)
+    deps["symlink_sources"] = ["mkdir_src"]
+
     for case in cases:
-        action_name = f"flow_{case.pdk}_{case.run_tag}"
-        actions[action_name] = partial(helpers.run_flow, flow_root, case, args.experiment, args.design_name)
-        deps[action_name] = []
+        name_base = f"{case.pdk}_{case.run_tag}"
+        mkdir_name = f"mkdir_{name_base}"
+        write_cfg_name = f"write_cfg_{name_base}"
+        write_sdc_name = f"write_sdc_{name_base}"
+        flow_name = f"flow_{name_base}"
+        metrics_name = f"metrics_{name_base}"
+
+        actions[mkdir_name] = partial(helpers.ensure_dir, case.config_dir, args.dry_run)
+        deps[mkdir_name] = ["symlink_sources"]
+
+        actions[write_cfg_name] = partial(helpers.write_file, case.config_path, case.config_text, args.dry_run)
+        deps[write_cfg_name] = [mkdir_name]
+
+        actions[write_sdc_name] = partial(helpers.write_file, case.sdc_path, case.sdc_text, args.dry_run)
+        deps[write_sdc_name] = [mkdir_name]
+
+        actions[flow_name] = partial(helpers.run_flow, flow_root, case, args.experiment, args.design_name, args.dry_run)
+        deps[flow_name] = [write_cfg_name, write_sdc_name]
+
+        actions[metrics_name] = partial(
+            helpers.assign_metrics, flow_root, args.experiment, args.design_name, case, args.dry_run
+        )
+        deps[metrics_name] = [flow_name]
+
+    def report_action():
+        rows = []
+        for case in cases:
+            rows.append({"design": args.design_name, "pdk": case.pdk, "clock_ns": case.clock_ns, **case.metrics})
+        output_root.mkdir(parents=True, exist_ok=True)
+        metrics_path = output_root / "metrics.jsonl"
+        plots_dir = output_root / "plots"
+
+        df = helpers.emit_metrics(rows, metrics_path, args.dry_run)
+        print(helpers.terminal_table(df))
+        (output_root / "metrics.tex").write_text(helpers.latex_table(df))
+        helpers.plot_metrics(df, plots_dir, args.dry_run)
+
+    actions["report"] = report_action
+    deps["report"] = [f"metrics_{case.pdk}_{case.run_tag}" for case in cases]
+
+    if args.dry_run:
+        print("Dry run: planned actions")
+        for name in actions:
+            print(f"- {name} (depends on {deps.get(name, [])})")
+        return
 
     scenario = Scenario(actions, deps, log=True)
     scenario.exec_once_sync_parallel(args.concurrency)
-
-    # Collect metrics and report
-    rows = []
-    for case in cases:
-        metrics = helpers.parse_metrics(flow_root, args.experiment, args.design_name, case)
-        rows.append({"design": args.design_name, "pdk": case.pdk, "clock_ns": case.clock_ns, **metrics})
-
-    output_root.mkdir(parents=True, exist_ok=True)
-    metrics_path = output_root / "metrics.jsonl"
-    plots_dir = output_root / "plots"
-
-    df = helpers.emit_metrics(rows, metrics_path)
-    print(helpers.terminal_table(df))
-    (output_root / "metrics.tex").write_text(helpers.latex_table(df))
-    helpers.plot_metrics(df, plots_dir)
 
 
 if __name__ == "__main__":

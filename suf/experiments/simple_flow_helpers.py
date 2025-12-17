@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""
-Shared helpers for simple flow experiments.
-"""
+"""Shared helpers for simple flow experiments (actions stay tiny)."""
 from __future__ import annotations
 
 import json
@@ -10,9 +8,9 @@ import math
 import os
 import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -29,6 +27,9 @@ class FlowCase:
     config_dir: Path
     config_path: Path
     sdc_path: Path
+    config_text: str
+    sdc_text: str
+    metrics: Dict[str, float] = field(default_factory=dict)
 
 
 def normalize_density(density: float) -> Tuple[float, float]:
@@ -48,10 +49,7 @@ def link_design_sources(
     design_name: str,
     dry_run: bool = False,
 ) -> Tuple[List[Tuple[Path, Path]], Path]:
-    """Symlink design sources into flow/designs/src/<experiment>/<design>.
-
-    Returns (planned_symlinks, src_root).
-    """
+    """Plan/perform symlinks into flow/designs/src/<experiment>/<design>."""
     src_root = flow_root / "designs" / "src" / experiment / design_name
     if not dry_run:
         src_root.mkdir(parents=True, exist_ok=True)
@@ -64,7 +62,7 @@ def link_design_sources(
     return planned, src_root
 
 
-def render_cases(
+def plan_cases(
     design_name: str,
     experiment: str,
     pdks: Sequence[str],
@@ -72,9 +70,8 @@ def render_cases(
     density: float,
     flow_root: Path,
     templates_dir: Path,
-    dry_run: bool = False,
 ) -> List[FlowCase]:
-    """Render config/sdc for each (pdk, clock) and return cases."""
+    """Prepare FlowCase objects with rendered text (no writes)."""
     env = Environment(
         loader=FileSystemLoader(templates_dir),
         autoescape=False,
@@ -91,8 +88,6 @@ def render_cases(
         for clk in clocks_ns:
             run_tag = f"c{clk:.2f}".replace(".", "p")
             design_dir = flow_root / "designs" / pdk / experiment / design_name / run_tag
-            design_dir.mkdir(parents=True, exist_ok=True)
-
             verilog_glob = f"./designs/src/{experiment}/{design_name}/*.v"
             sdc_rel = Path("designs") / pdk / experiment / design_name / run_tag / "constraint.sdc"
             sdc_path = design_dir / "constraint.sdc"
@@ -115,9 +110,6 @@ def render_cases(
                 clock_period=clk,
                 clock_io_pct=0.2,
             )
-            if not dry_run:
-                config_path.write_text(cfg_text)
-                sdc_path.write_text(sdc_text)
 
             cases.append(
                 FlowCase(
@@ -127,9 +119,31 @@ def render_cases(
                     config_dir=design_dir,
                     config_path=config_path,
                     sdc_path=sdc_path,
+                    config_text=cfg_text,
+                    sdc_text=sdc_text,
                 )
             )
     return cases
+
+
+def ensure_dir(path: Path, dry_run: bool) -> None:
+    if dry_run:
+        return
+    path.mkdir(parents=True, exist_ok=True)
+
+
+def write_file(path: Path, text: str, dry_run: bool) -> None:
+    if dry_run:
+        return
+    path.write_text(text)
+
+
+def create_symlinks(planned: List[Tuple[Path, Path]], dry_run: bool) -> None:
+    if dry_run:
+        return
+    for src, dst in planned:
+        if not dst.exists():
+            dst.symlink_to(src)
 
 
 def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_name: str) -> List[str]:
@@ -141,39 +155,24 @@ def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_nam
     ]
 
 
-def run_flow(flow_root: Path, case: FlowCase, experiment: str, design_name: str) -> None:
+def run_flow(flow_root: Path, case: FlowCase, experiment: str, design_name: str, dry_run: bool) -> None:
     cmd = planned_command(flow_root, case, experiment, design_name)
     env = os.environ.copy()
     env["RUN_TAG"] = case.run_tag
     LOG.info("Running flow: %s", " ".join(cmd))
+    if dry_run:
+        return
     proc = subprocess.run(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if proc.returncode != 0:
         LOG.error("Flow failed for %s/%s: %s", case.pdk, case.run_tag, proc.stdout.decode())
         raise RuntimeError(f"Flow failed for {case.pdk}/{case.run_tag}")
 
 
-def _metric_paths(flow_root: Path, experiment: str, design_name: str, case: FlowCase) -> Dict[str, Path]:
-    base = flow_root / "logs" / case.pdk / experiment / design_name / case.run_tag
-    return {
-        "report": base / "6_report.json",
-        "cts": base / "4_1_cts.json",
-        "place": base / "3_4_place_resized.json",
-        "route": base / "5_2_route.json",
-        "final_log": base / "6_report.log",
-        "route_log": base / "5_2_route.log",
-    }
-
-
-def _load_json(path: Path) -> Dict[str, float]:
-    try:
-        return json.loads(path.read_text())
-    except Exception:
-        return {}
-
-
-def _first_match(pattern: str, text: str) -> str | None:
-    m = re.search(pattern, text)
-    return m.group(1) if m else None
+def assign_metrics(flow_root: Path, experiment: str, design_name: str, case: FlowCase, dry_run: bool) -> None:
+    if dry_run:
+        case.metrics = {}
+        return
+    case.metrics = parse_metrics(flow_root, experiment, design_name, case)
 
 
 def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: FlowCase) -> Dict[str, float]:
@@ -239,24 +238,9 @@ def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: Flow
     return metrics
 
 
-def _scrape_logs_for_metrics(path: Path, metrics: Dict[str, float]) -> None:
-    if not path.exists():
-        return
-    text = path.read_text(errors="ignore")
-    wl_match = _first_match(r"Total wire length\s*=\s*([0-9.]+)", text)
-    if wl_match and math.isnan(metrics.get("wirelength", float("nan"))):
-        metrics["wirelength"] = _to_float(wl_match)
-    area_match = _first_match(r"Design area\s*([0-9.]+)", text)
-    if area_match and math.isnan(metrics.get("gds_area", float("nan"))):
-        metrics["gds_area"] = _to_float(area_match)
-    buf_match = _first_match(r"Timing Repair Buffer\s+([0-9]+)", text)
-    if buf_match and "buffer_count" not in metrics:
-        metrics["buffer_count"] = _to_float(buf_match)
-
-
-def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path) -> pd.DataFrame:
+def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: bool) -> pd.DataFrame:
     df = pd.DataFrame(rows)
-    if df.empty:
+    if df.empty or dry_run:
         return df
     with metrics_path.open("w") as handle:
         for row in rows:
@@ -280,8 +264,8 @@ def latex_table(df: pd.DataFrame) -> str:
     return df_disp.to_latex(index=False, float_format="%.3f")
 
 
-def plot_metrics(df: pd.DataFrame, plots_dir: Path) -> None:
-    if df.empty:
+def plot_metrics(df: pd.DataFrame, plots_dir: Path, dry_run: bool) -> None:
+    if df.empty or dry_run:
         return
     plots_dir.mkdir(parents=True, exist_ok=True)
     for metric in ["gds_area", "wns", "tns", "wirelength"]:
@@ -299,8 +283,48 @@ def plot_metrics(df: pd.DataFrame, plots_dir: Path) -> None:
         plt.close(fig)
 
 
+# Internal helpers
+def _metric_paths(flow_root: Path, experiment: str, design_name: str, case: FlowCase) -> Dict[str, Path]:
+    base = flow_root / "logs" / case.pdk / experiment / design_name / case.run_tag
+    return {
+        "report": base / "6_report.json",
+        "cts": base / "4_1_cts.json",
+        "place": base / "3_4_place_resized.json",
+        "route": base / "5_2_route.json",
+        "final_log": base / "6_report.log",
+        "route_log": base / "5_2_route.log",
+    }
+
+
+def _load_json(path: Path) -> Dict[str, float]:
+    try:
+        return json.loads(path.read_text())
+    except Exception:
+        return {}
+
+
+def _scrape_logs_for_metrics(path: Path, metrics: Dict[str, float]) -> None:
+    if not path.exists():
+        return
+    text = path.read_text(errors="ignore")
+    wl_match = _first_match(r"Total wire length\s*=\s*([0-9.]+)", text)
+    if wl_match and math.isnan(metrics.get("wirelength", float("nan"))):
+        metrics["wirelength"] = _to_float(wl_match)
+    area_match = _first_match(r"Design area\s*([0-9.]+)", text)
+    if area_match and math.isnan(metrics.get("gds_area", float("nan"))):
+        metrics["gds_area"] = _to_float(area_match)
+    buf_match = _first_match(r"Timing Repair Buffer\s+([0-9]+)", text)
+    if buf_match and "buffer_count" not in metrics:
+        metrics["buffer_count"] = _to_float(buf_match)
+
+
 def _to_float(val: object) -> float:
     try:
         return float(val)
     except (TypeError, ValueError):
         return float("nan")
+
+
+def _first_match(pattern: str, text: str) -> str | None:
+    m = re.search(pattern, text)
+    return m.group(1) if m else None
