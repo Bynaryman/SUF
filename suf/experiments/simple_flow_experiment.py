@@ -46,7 +46,7 @@ def main(argv=None):
     flow_root = args.flow_root if args.flow_root is not None else FLOW_ROOT
     output_root = args.output_root if args.output_root is not None else (GRAFT_ROAD_ROOT / "outputs" / args.experiment)
 
-    helpers.link_design_sources(args.design_dir, flow_root, args.experiment, args.design_name)
+    planned_links = helpers.link_design_sources(args.design_dir, flow_root, args.experiment, args.design_name, dry_run=args.dry_run)
     cases = helpers.render_cases(
         design_name=args.design_name,
         experiment=args.experiment,
@@ -55,12 +55,15 @@ def main(argv=None):
         density=args.density,
         flow_root=flow_root,
         templates_dir=Path(__file__).resolve().parents[1] / "templates",
+        dry_run=args.dry_run,
     )
 
     if args.dry_run:
         print("Dry run: planned flow commands")
         print(f"Design: {args.design_name} | Experiment: {args.experiment} | Density: {args.density}")
         print(f"PDKs: {', '.join(args.pdks)} | Clocks: {', '.join(str(c) for c in args.clocks)}")
+        for src, dst in planned_links:
+            print(f"[symlink] {src} -> {dst}")
         for case in cases:
             cmd = helpers.planned_command(flow_root, case, args.experiment, args.design_name)
             print(f"[{case.pdk} @ {case.clock_ns}ns | run_tag={case.run_tag}] {' '.join(cmd)}")

@@ -41,14 +41,27 @@ def normalize_density(density: float) -> Tuple[float, float]:
     return util, place
 
 
-def link_design_sources(design_dir: Path, flow_root: Path, experiment: str, design_name: str) -> None:
-    """Symlink design sources into flow/designs/src/<experiment>/<design>."""
+def link_design_sources(
+    design_dir: Path,
+    flow_root: Path,
+    experiment: str,
+    design_name: str,
+    dry_run: bool = False,
+) -> List[Tuple[Path, Path]]:
+    """Symlink design sources into flow/designs/src/<experiment>/<design>.
+
+    Returns a list of (src, dest) pairs.
+    """
     src_root = flow_root / "designs" / "src" / experiment / design_name
-    src_root.mkdir(parents=True, exist_ok=True)
+    if not dry_run:
+        src_root.mkdir(parents=True, exist_ok=True)
+    planned: List[Tuple[Path, Path]] = []
     for item in design_dir.glob("*.v"):
         dest = src_root / item.name
-        if not dest.exists():
+        planned.append((item, dest))
+        if not dry_run and not dest.exists():
             dest.symlink_to(item)
+    return planned
 
 
 def render_cases(
@@ -59,6 +72,7 @@ def render_cases(
     density: float,
     flow_root: Path,
     templates_dir: Path,
+    dry_run: bool = False,
 ) -> List[FlowCase]:
     """Render config/sdc for each (pdk, clock) and return cases."""
     env = Environment(
@@ -94,8 +108,6 @@ def render_cases(
                 clock_period=clk,
                 flow_overrides={},
             )
-            config_path.write_text(cfg_text)
-
             sdc_text = sdc_template.render(
                 design_name=design_name,
                 clock_name="core_clock",
@@ -103,7 +115,9 @@ def render_cases(
                 clock_period=clk,
                 clock_io_pct=0.2,
             )
-            sdc_path.write_text(sdc_text)
+            if not dry_run:
+                config_path.write_text(cfg_text)
+                sdc_path.write_text(sdc_text)
 
             cases.append(
                 FlowCase(
