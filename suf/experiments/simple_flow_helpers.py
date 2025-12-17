@@ -50,15 +50,22 @@ def link_design_sources(
     dry_run: bool = False,
 ) -> Tuple[List[Tuple[Path, Path]], Path]:
     """Plan/perform symlinks into flow/designs/src/<experiment>/<design>."""
+    design_dir = design_dir.resolve()
     src_root = flow_root / "designs" / "src" / experiment / design_name
     if not dry_run:
         src_root.mkdir(parents=True, exist_ok=True)
     planned: List[Tuple[Path, Path]] = []
     for item in design_dir.glob("*.v"):
+        src = item.resolve()
         dest = src_root / item.name
-        planned.append((item, dest))
-        if not dry_run and not dest.exists():
-            dest.symlink_to(item)
+        planned.append((src, dest))
+        if not dry_run:
+            try:
+                if not dest.exists():
+                    dest.symlink_to(src)
+            except FileExistsError:
+                # Ignore if already present
+                pass
     return planned, src_root
 
 
@@ -142,8 +149,9 @@ def create_symlinks(planned: List[Tuple[Path, Path]], dry_run: bool) -> None:
     if dry_run:
         return
     for src, dst in planned:
-        if not dst.exists():
-            dst.symlink_to(src)
+        if dst.exists() or dst.is_symlink():
+            dst.unlink()
+        dst.symlink_to(src)
 
 
 def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_name: str) -> List[str]:
@@ -152,6 +160,7 @@ def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_nam
         "-C",
         str(flow_root),
         f"DESIGN_CONFIG=./designs/{case.pdk}/{experiment}/{design_name}/{case.run_tag}/config.mk",
+        f"RUN_TAG={case.run_tag}",
     ]
 
 
@@ -285,7 +294,7 @@ def plot_metrics(df: pd.DataFrame, plots_dir: Path, dry_run: bool) -> None:
 
 # Internal helpers
 def _metric_paths(flow_root: Path, experiment: str, design_name: str, case: FlowCase) -> Dict[str, Path]:
-    base = flow_root / "logs" / case.pdk / experiment / design_name / case.run_tag
+    base = flow_root / "logs" / case.pdk / design_name / case.run_tag
     return {
         "report": base / "6_report.json",
         "cts": base / "4_1_cts.json",
