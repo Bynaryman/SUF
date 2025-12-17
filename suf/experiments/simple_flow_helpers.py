@@ -165,17 +165,30 @@ def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_nam
     ]
 
 
-def run_flow(flow_root: Path, case: FlowCase, experiment: str, design_name: str, dry_run: bool) -> None:
+def run_flow(
+    flow_root: Path,
+    case: FlowCase,
+    experiment: str,
+    design_name: str,
+    dry_run: bool,
+    verbose: bool = False,
+) -> None:
     cmd = planned_command(flow_root, case, experiment, design_name)
     env = os.environ.copy()
     env["FLOW_VARIANT"] = case.run_tag
     LOG.info("Running flow: %s", " ".join(cmd))
     if dry_run:
         return
-    proc = subprocess.run(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    proc = subprocess.run(
+        cmd,
+        env=env,
+        stdout=None if verbose else subprocess.PIPE,
+        stderr=None if verbose else subprocess.STDOUT,
+    )
     if proc.returncode != 0:
         case.failed = True
-        LOG.error("Flow failed for %s/%s: %s", case.pdk, case.run_tag, proc.stdout.decode())
+        output = "" if verbose else proc.stdout.decode()
+        LOG.error("Flow failed for %s/%s: %s", case.pdk, case.run_tag, output)
 
 
 def assign_metrics(flow_root: Path, experiment: str, design_name: str, case: FlowCase, dry_run: bool) -> None:
