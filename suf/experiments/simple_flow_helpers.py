@@ -268,6 +268,20 @@ def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: Flow
 
 def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: bool) -> pd.DataFrame:
     df = pd.DataFrame(rows)
+    required_cols = [
+        "design",
+        "pdk",
+        "clock_ns",
+        "gds_area",
+        "synth_area",
+        "synth_cell_count",
+        "wns",
+        "tns",
+        "wirelength",
+    ]
+    for col in required_cols:
+        if col not in df.columns:
+            df[col] = float("nan")
     if df.empty or dry_run:
         return df
     with metrics_path.open("w") as handle:
@@ -297,6 +311,8 @@ def plot_metrics(df: pd.DataFrame, plots_dir: Path, dry_run: bool) -> None:
         return
     plots_dir.mkdir(parents=True, exist_ok=True)
     for metric in ["gds_area", "wns", "tns", "wirelength"]:
+        if metric not in df.columns:
+            continue
         fig, ax = plt.subplots()
         for pdk, group in df.groupby("pdk"):
             ax.plot(group["clock_ns"], group[metric], marker="o", label=pdk)
