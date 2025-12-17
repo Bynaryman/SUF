@@ -53,9 +53,11 @@ def main(argv=None):
 
     if args.dry_run:
         print("Dry run: planned flow commands")
+        print(f"Design: {args.design_name} | Experiment: {args.experiment} | Density: {args.density}")
+        print(f"PDKs: {', '.join(args.pdks)} | Clocks: {', '.join(str(c) for c in args.clocks)}")
         for case in cases:
             cmd = helpers.planned_command(flow_root, case, args.experiment, args.design_name)
-            print(" ".join(cmd), f"(RUN_TAG={case.run_tag})")
+            print(f"[{case.pdk} @ {case.clock_ns}ns | run_tag={case.run_tag}] {' '.join(cmd)}")
         return
 
     # Build Scenario: one flow action per case

@@ -26,6 +26,7 @@ class FlowCase:
     pdk: str
     clock_ns: float
     run_tag: str
+    config_dir: Path
     config_path: Path
     sdc_path: Path
 
@@ -73,12 +74,13 @@ def render_cases(
 
     cases: List[FlowCase] = []
     for pdk in pdks:
-        design_dir = flow_root / "designs" / pdk / experiment / design_name
-        design_dir.mkdir(parents=True, exist_ok=True)
-
         for clk in clocks_ns:
+            run_tag = f"c{clk:.2f}".replace(".", "p")
+            design_dir = flow_root / "designs" / pdk / experiment / design_name / run_tag
+            design_dir.mkdir(parents=True, exist_ok=True)
+
             verilog_glob = f"./designs/src/{experiment}/{design_name}/*.v"
-            sdc_rel = Path("designs") / pdk / experiment / design_name / "constraint.sdc"
+            sdc_rel = Path("designs") / pdk / experiment / design_name / run_tag / "constraint.sdc"
             sdc_path = design_dir / "constraint.sdc"
             config_path = design_dir / "config.mk"
 
@@ -103,8 +105,16 @@ def render_cases(
             )
             sdc_path.write_text(sdc_text)
 
-            run_tag = f"c{clk:.2f}".replace(".", "p")
-            cases.append(FlowCase(pdk=pdk, clock_ns=clk, run_tag=run_tag, config_path=config_path, sdc_path=sdc_path))
+            cases.append(
+                FlowCase(
+                    pdk=pdk,
+                    clock_ns=clk,
+                    run_tag=run_tag,
+                    config_dir=design_dir,
+                    config_path=config_path,
+                    sdc_path=sdc_path,
+                )
+            )
     return cases
 
 
@@ -113,7 +123,7 @@ def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_nam
         "make",
         "-C",
         str(flow_root),
-        f"DESIGN_CONFIG=./designs/{case.pdk}/{experiment}/{design_name}/config.mk",
+        f"DESIGN_CONFIG=./designs/{case.pdk}/{experiment}/{design_name}/{case.run_tag}/config.mk",
     ]
 
 
