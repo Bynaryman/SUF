@@ -6,13 +6,14 @@ from scenario import Scenario
 from pdk_configs import PDKS
 from division_configs import division_configs
 import os
+from config import FLOW_DIR
 
 # define the actions to perform and their inter dependencies
 actions_push = {}
 dependencies_push = {}
 
 # todo(lledoux): be careful with this path
-COMMAND_TEMPLATE_IMAGE = "make -C /home/lledoux/Documents/PhD/SUF/OpenROAD-flow-scripts/flow/ DESIGN_CONFIG=./designs/{}/divisions/{}/config.mk gui_final"
+COMMAND_TEMPLATE_IMAGE = f"make -C {FLOW_DIR} DESIGN_CONFIG=./designs/{{}}/divisions/{{}}/config.mk gui_final"
 COMMAND_CP_WITH_NAME = "mv /tmp/tmp.png /home/lledoux/Documents/PhD/gallery/{}_{}.png"
 
 for p in PDKS:

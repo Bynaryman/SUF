@@ -19,9 +19,10 @@ import csv
 import argparse
 import json
 from collections import defaultdict # to call append on None value of a key
+from config import FLOW_DIR
 
-PATH_UNITS   =  "/home/lledoux/Documents/PhD/SUF/OpenROAD-flow-scripts/flow/logs/{}/{}/base/2_1_floorplan.json"
-PATH_RESULTS =  "/home/lledoux/Documents/PhD/SUF/OpenROAD-flow-scripts/flow/logs/{}/{}/base/6_report.json"
+PATH_UNITS   =  f"{FLOW_DIR}/logs/{{}}/{{}}/base/2_1_floorplan.json"
+PATH_RESULTS =  f"{FLOW_DIR}/logs/{{}}/{{}}/base/6_report.json"
 
 
 # Figure width base on the column width of the Latex document.

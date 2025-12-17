@@ -1,1 +1,14 @@
+graft_road/outputs/
 venv/
+venv311/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.pytest_cache/
+.mypy_cache/
+.cache/
+OpenROAD-flow-scripts/
+translation_tools/
+graft_road/translation_tools/

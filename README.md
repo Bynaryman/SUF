@@ -21,17 +21,18 @@
 
 ### TL;DR
 Are you interested by OpenROAD or the evolving domain of modern, open-source, rapid EDA tools for silicon design?
-This project operates as an enhancement graft that augments OpenROAD's capabilities.
-By cloning this repository, you will obtain both OpenROAD and a suite of Python tools adept at managing the process from input generation to generating detailed output plots in a parallel fashion.
+This project operates as an enhancement graft that augments OpenROAD's capabilities. SUF now expects you to have an existing [OpenROAD-flow-scripts](https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts) checkout installed on your machine (not vendored here); point SUF at it via `SUF_FLOW_ROOT` or `FLOW_HOME`.
 For a swift overview after cloning and setting up, as detailed in the subsequent sections, a user can engage with the available commands/scripts as follows:
 1. Clone the repository.
-2. Install as per the instructions below.
-3. `cd graft_road/` to browse its structure.
-4. `ls -la` to examine the file organization.
-5. `. ./venv/bin activate` activate virtual environment
-6. `cd tools`
-7. `./run_example` to generate HDL for various designs with different PDKs and initiate the OpenROAD flow concurrently.
-8. `./plot_example` to reveal the plotting capabilities.
+2. Export `SUF_FLOW_ROOT=/path/to/OpenROAD-flow-scripts/flow` (or set `FLOW_HOME`). A local OpenROAD-flow-scripts copy is no longer bundled; SUF will auto-detect the `openroad` and `yosys` binaries under that flow (`tools/install/...`). You can still override with `SUF_OPENROAD_EXE` / `SUF_YOSYS_CMD` if you want different builds (or rely on `PATH` as a last resort).
+3. If you use the VHDL→Verilog translation utilities, point `SUF_TRANSLATION_ROOT` to your external translation tools checkout (e.g., a vh2v repo). You can override the vh2v script directly with `SUF_VH2V_BIN` if needed.
+4. Install as per the instructions below.
+5. `cd graft_road/` to browse its structure.
+6. `ls -la` to examine the file organization.
+7. `. ./venv/bin activate` activate virtual environment
+8. `cd tools`
+9. `./run_example` to generate HDL for various designs with different PDKs and initiate the OpenROAD flow concurrently.
+10. `./plot_example` to reveal the plotting capabilities.
 
 ### Graphically Speaking
 Overall, SUF framework is best represented with the following Figure
@@ -44,12 +45,14 @@ file hierachy with explanations
 
 ## Installation Instructions
 
-The `graft_road` directory contains the necessary submodules for translation tools. To clone `graft_road` and its submodules, use the following commands:
+OpenROAD-flow-scripts is not bundled in this repository. Install or clone it separately and point SUF to the `flow` directory via:
 
 ```bash
-git clone --recurse-submodules https://github.com/Bynaryman/SUF.git
-cd SUF/graft_road/translation_tools
+export SUF_FLOW_ROOT=/path/to/OpenROAD-flow-scripts/flow
+# or rely on FLOW_HOME if your OpenROAD setup already exports it
 ```
+
+Make sure the `openroad` and `yosys` binaries you want to use are on `PATH`, or set `SUF_OPENROAD_EXE` / `SUF_YOSYS_CMD` to explicit locations. Translation utilities (vh2v, ghdl, yosys add-ons) are also expected to live in your own checkout; point `SUF_TRANSLATION_ROOT` (or `SUF_VH2V_BIN`) at them.
 
 ## How does it work ?
 
