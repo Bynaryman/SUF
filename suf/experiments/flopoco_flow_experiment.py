@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import logging
 import os
@@ -10,8 +11,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
-
-import yaml
 
 THIS_FILE = Path(__file__).resolve()
 REPO_ROOT = THIS_FILE.parents[2]
@@ -37,9 +36,8 @@ class DesignSpec:
     meta: Dict[str, Any]
 
 
-def _resolve_flopoco_bin(cli_bin: str | None, allow_missing: bool) -> str:
+def _resolve_flopoco_bin(allow_missing: bool) -> str:
     candidates = [
-        cli_bin,
         os.environ.get("SUF_FLOPOCO_BIN"),
         os.environ.get("FLOPOCO_BIN"),
     ]
@@ -59,7 +57,6 @@ def _resolve_flopoco_bin(cli_bin: str | None, allow_missing: bool) -> str:
 
 def _resolve_vh2v_bin(cli_bin: str | None, allow_missing: bool) -> str:
     candidates = [
-        cli_bin,
         os.environ.get("SUF_VH2V_BIN"),
         os.environ.get("VH2V_BIN"),
         VH2V_BIN,
@@ -72,24 +69,71 @@ def _resolve_vh2v_bin(cli_bin: str | None, allow_missing: bool) -> str:
     raise RuntimeError("vh2v script not found. Set --vh2v-bin or SUF_VH2V_BIN/VH2V_BIN.")
 
 
+def _load_module_from_path(path: Path):
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load config module from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)  # type: ignore
+    return module
+
+
+def _parse_params_from_strings(items: List[str]) -> Dict[str, Any]:
+    params: Dict[str, Any] = {}
+    for it in items:
+        if "=" not in it:
+            continue
+        k, v = it.split("=", 1)
+        try:
+            params[k] = json.loads(v)
+        except Exception:
+            params[k] = v
+    return params
+
+
 def load_designs(config_path: Path) -> List[DesignSpec]:
-    data = yaml.safe_load(config_path.read_text())
-    if not isinstance(data, list):
-        raise ValueError("Config file must contain a list of design dicts.")
+    module = _load_module_from_path(config_path)
+    data = getattr(module, "DESIGNS", getattr(module, "CONFIGS", None))
+    if data is None:
+        raise ValueError("Config module must define DESIGNS (list or dict).")
+
     designs: List[DesignSpec] = []
+    if isinstance(data, dict):
+        for name, entry in data.items():
+            if isinstance(entry, (list, tuple)) and len(entry) >= 1:
+                operator = entry[0]
+                params = _parse_params_from_strings(list(entry[1:]))
+                designs.append(DesignSpec(name, operator, params, [], {}))
+            elif isinstance(entry, dict):
+                operator = entry.get("operator")
+                if not operator:
+                    raise ValueError(f"Entry {name} missing 'operator'")
+                params = entry.get("params", {})
+                args = entry.get("args", [])
+                meta = {k: v for k, v in entry.items() if k not in {"operator", "params", "args"}}
+                designs.append(DesignSpec(name, operator, params, args, meta))
+            else:
+                raise ValueError(f"Unsupported entry type for {name}")
+        return designs
+
+    if not isinstance(data, list):
+        raise ValueError("DESIGNS must be a list or dict.")
+
     for entry in data:
-        if not isinstance(entry, dict):
-            raise ValueError("Each design entry must be a dict.")
-        if "name" not in entry or "operator" not in entry:
-            raise ValueError("Each entry needs at least 'name' and 'operator' keys.")
-        params = entry.get("params") or {}
-        if not isinstance(params, dict):
-            raise ValueError("params must be a dictionary when provided.")
-        args = entry.get("args") or []
-        if not isinstance(args, list):
-            raise ValueError("args must be a list when provided.")
-        meta = {k: v for k, v in entry.items() if k not in {"name", "operator", "params", "args"}}
-        designs.append(DesignSpec(entry["name"], entry["operator"], params, args, meta))
+        if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+            name = str(entry[0])
+            operator = str(entry[1])
+            params = _parse_params_from_strings(list(entry[2:]))
+            designs.append(DesignSpec(name, operator, params, [], {}))
+        elif isinstance(entry, dict):
+            if "name" not in entry or "operator" not in entry:
+                raise ValueError("Dict entries require 'name' and 'operator'.")
+            params = entry.get("params") or {}
+            args = entry.get("args") or []
+            meta = {k: v for k, v in entry.items() if k not in {"name", "operator", "params", "args"}}
+            designs.append(DesignSpec(entry["name"], entry["operator"], params, args, meta))
+        else:
+            raise ValueError("Each list entry must be a tuple/list or dict.")
     return designs
 
 
@@ -141,7 +185,7 @@ def translate_vhdl(vh2v_bin: str, vhdl_path: Path, out_dir: Path, dry_run: bool,
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Run Flopoco-generated designs through OpenROAD.")
-    p.add_argument("--config-file", required=True, help="YAML/JSON file with a list of flopoco design specs.")
+    p.add_argument("--config-file", required=True, help="Python file defining DESIGNS (list or dict of specs).")
     p.add_argument("--experiment", default="flopoco", help="Experiment namespace under designs/ (default: flopoco)")
     p.add_argument("--pdks", nargs="+", default=["sky130hd", "asap7"])
     p.add_argument("--clocks", nargs="+", type=float, default=[5.0, 2.5, 1.0])
@@ -151,8 +195,6 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--output-root", default=None)
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--verbose", action="store_true")
-    p.add_argument("--flopoco-bin", default=None, help="Override path to Flopoco binary.")
-    p.add_argument("--vh2v-bin", default=None, help="Override path to vh2v script.")
     return p
 
 
@@ -169,8 +211,8 @@ def main(argv=None) -> None:
         if args.output_root
         else Path("graft_road") / "outputs" / args.experiment
     )
-    flopoco_bin = _resolve_flopoco_bin(args.flopoco_bin, allow_missing=args.dry_run)
-    vh2v_bin = _resolve_vh2v_bin(args.vh2v_bin, allow_missing=args.dry_run)
+    flopoco_bin = _resolve_flopoco_bin(allow_missing=args.dry_run)
+    vh2v_bin = _resolve_vh2v_bin(None, allow_missing=args.dry_run)
 
     designs = load_designs(Path(args.config_file))
 
