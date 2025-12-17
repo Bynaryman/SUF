@@ -96,6 +96,9 @@ def main(argv=None):
     def report_action():
         rows = []
         for case in cases:
+            # Refresh metrics/status in the main process to avoid losing state across
+            # taskmap worker processes.
+            helpers.assign_metrics(flow_root, args.experiment, design_name, case, args.dry_run)
             rows.append(
                 {
                     "design": design_name,

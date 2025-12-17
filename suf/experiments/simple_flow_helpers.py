@@ -232,8 +232,16 @@ def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: Flow
             "design__die__area",
         ],
         "synth_area": [
+            "synth__design__instance__area",
             "finish__design__instance__area",
             "design__instance__area",
+        ],
+        "synth_cell_count": [
+            "synth__design__instance__count__stdcell",
+            "finish__design__instance__count__stdcell",
+            "finish__design__instance__count",
+            "design__instance__count__stdcell",
+            "design__instance__count",
         ],
         "wirelength": [
             "detailedroute__route__wirelength",
@@ -247,10 +255,6 @@ def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: Flow
         "tns": [
             "finish__timing__setup__tns",
             "timing__setup__tns",
-        ],
-        "synth_cell_count": [
-            "synth__design__instance__count__stdcell",
-            "design__instance__count__stdcell",
         ],
     }
     for metric, keys in key_map.items():
