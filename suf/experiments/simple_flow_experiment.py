@@ -67,6 +67,8 @@ def main(argv=None):
         print(f"[mkdir] {src_root}")
         for case in cases:
             print(f"[mkdir] {case.config_dir}")
+            print(f"[write] {case.config_path}")
+            print(f"[write] {case.sdc_path}")
         for src, dst in planned_links:
             print(f"[symlink] {src} -> {dst}")
         for case in cases:
