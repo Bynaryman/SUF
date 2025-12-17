@@ -30,6 +30,7 @@ class FlowCase:
     config_text: str
     sdc_text: str
     metrics: Dict[str, float] = field(default_factory=dict)
+    failed: bool = False
 
 
 def normalize_density(density: float) -> Tuple[float, float]:
@@ -173,15 +174,20 @@ def run_flow(flow_root: Path, case: FlowCase, experiment: str, design_name: str,
         return
     proc = subprocess.run(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if proc.returncode != 0:
+        case.failed = True
         LOG.error("Flow failed for %s/%s: %s", case.pdk, case.run_tag, proc.stdout.decode())
-        raise RuntimeError(f"Flow failed for {case.pdk}/{case.run_tag}")
 
 
 def assign_metrics(flow_root: Path, experiment: str, design_name: str, case: FlowCase, dry_run: bool) -> None:
     if dry_run:
         case.metrics = {}
         return
-    case.metrics = parse_metrics(flow_root, experiment, design_name, case)
+    try:
+        case.metrics = parse_metrics(flow_root, experiment, design_name, case)
+    except Exception as exc:
+        case.failed = True
+        LOG.error("Metrics parsing failed for %s/%s: %s", case.pdk, case.run_tag, exc)
+        case.metrics = {}
 
 
 def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: FlowCase) -> Dict[str, float]:
