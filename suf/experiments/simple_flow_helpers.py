@@ -286,10 +286,11 @@ def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: boo
     for col in required_cols:
         if col not in df.columns:
             df[col] = float("nan")
+    df = df[required_cols]
     if df.empty or dry_run:
         return df
     with metrics_path.open("w") as handle:
-        for row in rows:
+        for row in df.to_dict(orient="records"):
             handle.write(json.dumps(row) + "\n")
     return df
 
