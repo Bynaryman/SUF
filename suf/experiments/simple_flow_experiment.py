@@ -96,7 +96,16 @@ def main(argv=None):
     def report_action():
         rows = []
         for case in cases:
-            rows.append({"design": design_name, "pdk": case.pdk, "clock_ns": case.clock_ns, **case.metrics})
+            rows.append(
+                {
+                    "design": design_name,
+                    "pdk": case.pdk,
+                    "clock_ns": case.clock_ns,
+                    "status": "failed" if case.failed else "ok",
+                    "log_dir": str(helpers.metric_log_dir(flow_root, design_name, case)),
+                    **case.metrics,
+                }
+            )
         output_root.mkdir(parents=True, exist_ok=True)
         metrics_path = output_root / "metrics.jsonl"
         plots_dir = output_root / "plots"

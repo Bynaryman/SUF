@@ -197,6 +197,8 @@ def assign_metrics(flow_root: Path, experiment: str, design_name: str, case: Flo
         return
     try:
         case.metrics = parse_metrics(flow_root, experiment, design_name, case)
+        if not case.metrics:
+            case.failed = True
     except Exception as exc:
         case.failed = True
         LOG.error("Metrics parsing failed for %s/%s: %s", case.pdk, case.run_tag, exc)
@@ -272,6 +274,8 @@ def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: boo
         "design",
         "pdk",
         "clock_ns",
+        "status",
+        "log_dir",
         "gds_area",
         "synth_area",
         "synth_cell_count",
@@ -293,7 +297,7 @@ def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: boo
 def terminal_table(df: pd.DataFrame) -> str:
     if df.empty:
         return "No metrics (possibly dry-run)."
-    cols = ["pdk", "clock_ns", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
+    cols = ["pdk", "clock_ns", "status", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
     df_disp = df.reindex(columns=cols)
     return df_disp.to_string(index=False)
 
@@ -301,7 +305,7 @@ def terminal_table(df: pd.DataFrame) -> str:
 def latex_table(df: pd.DataFrame) -> str:
     if df.empty:
         return "% No metrics (possibly dry-run)."
-    cols = ["pdk", "clock_ns", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
+    cols = ["pdk", "clock_ns", "status", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
     df_disp = df.reindex(columns=cols)
     return df_disp.to_latex(index=False, float_format="%.3f")
 
@@ -309,12 +313,15 @@ def latex_table(df: pd.DataFrame) -> str:
 def plot_metrics(df: pd.DataFrame, plots_dir: Path, dry_run: bool) -> None:
     if df.empty or dry_run:
         return
+    df_ok = df[df["status"] != "failed"]
+    if df_ok.empty:
+        return
     plots_dir.mkdir(parents=True, exist_ok=True)
     for metric in ["gds_area", "wns", "tns", "wirelength"]:
-        if metric not in df.columns:
+        if metric not in df_ok.columns:
             continue
         fig, ax = plt.subplots()
-        for pdk, group in df.groupby("pdk"):
+        for pdk, group in df_ok.groupby("pdk"):
             ax.plot(group["clock_ns"], group[metric], marker="o", label=pdk)
         ax.set_xlabel("Clock period (ns)")
         ax.set_ylabel(metric)
@@ -329,7 +336,7 @@ def plot_metrics(df: pd.DataFrame, plots_dir: Path, dry_run: bool) -> None:
 
 # Internal helpers
 def _metric_paths(flow_root: Path, experiment: str, design_name: str, case: FlowCase) -> Dict[str, Path]:
-    base = flow_root / "logs" / case.pdk / design_name / case.run_tag
+    base = metric_log_dir(flow_root, design_name, case)
     return {
         "report": base / "6_report.json",
         "cts": base / "4_1_cts.json",
@@ -338,6 +345,10 @@ def _metric_paths(flow_root: Path, experiment: str, design_name: str, case: Flow
         "final_log": base / "6_report.log",
         "route_log": base / "5_2_route.log",
     }
+
+
+def metric_log_dir(flow_root: Path, design_name: str, case: FlowCase) -> Path:
+    return flow_root / "logs" / case.pdk / design_name / case.run_tag
 
 
 def _load_json(path: Path) -> Dict[str, float]:
