@@ -47,10 +47,10 @@ def link_design_sources(
     experiment: str,
     design_name: str,
     dry_run: bool = False,
-) -> List[Tuple[Path, Path]]:
+) -> Tuple[List[Tuple[Path, Path]], Path]:
     """Symlink design sources into flow/designs/src/<experiment>/<design>.
 
-    Returns a list of (src, dest) pairs.
+    Returns (planned_symlinks, src_root).
     """
     src_root = flow_root / "designs" / "src" / experiment / design_name
     if not dry_run:
@@ -61,7 +61,7 @@ def link_design_sources(
         planned.append((item, dest))
         if not dry_run and not dest.exists():
             dest.symlink_to(item)
-    return planned
+    return planned, src_root
 
 
 def render_cases(
