@@ -8,6 +8,11 @@ import sys
 from functools import partial
 from pathlib import Path
 
+# Ensure repo root is on sys.path so graft_road imports resolve when executed as a script.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from graft_road.libs.scenario import Scenario
 from suf import FLOW_ROOT, GRAFT_ROAD_ROOT
 from suf.experiments import simple_flow_helpers as helpers
@@ -103,6 +108,15 @@ def main(argv=None):
         print("Dry run: planned actions")
         for name in actions:
             print(f"- {name} (depends on {deps.get(name, [])})")
+        # Recap cases
+        print("\nPlanned cases:")
+        rows = [
+            {"pdk": c.pdk, "clock_ns": c.clock_ns, "run_tag": c.run_tag, "config_dir": str(c.config_dir)}
+            for c in cases
+        ]
+        import pandas as pd
+
+        print(pd.DataFrame(rows).sort_values(["pdk", "clock_ns"]).to_string(index=False))
         return
 
     scenario = Scenario(actions, deps, log=True)
