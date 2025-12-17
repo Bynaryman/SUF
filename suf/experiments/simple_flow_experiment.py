@@ -81,11 +81,11 @@ def main(argv=None):
         actions[write_sdc_name] = partial(helpers.write_file, case.sdc_path, case.sdc_text, args.dry_run)
         deps[write_sdc_name] = [mkdir_name]
 
-        actions[flow_name] = partial(helpers.run_flow, flow_root, case, args.experiment, args.design_name, args.dry_run)
+        actions[flow_name] = partial(helpers.run_flow, flow_root, case, args.experiment, design_name, args.dry_run)
         deps[flow_name] = [write_cfg_name, write_sdc_name]
 
         actions[metrics_name] = partial(
-            helpers.assign_metrics, flow_root, args.experiment, args.design_name or design_name, case, args.dry_run
+            helpers.assign_metrics, flow_root, args.experiment, design_name, case, args.dry_run
         )
         deps[metrics_name] = [flow_name]
 
