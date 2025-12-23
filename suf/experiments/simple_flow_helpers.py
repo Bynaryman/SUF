@@ -24,6 +24,7 @@ class FlowCase:
     pdk: str
     clock_ns: float
     run_tag: str
+    design_nickname: str
     config_dir: Path
     config_path: Path
     sdc_path: Path
@@ -95,6 +96,7 @@ def plan_cases(
     for pdk in pdks:
         for clk in clocks_ns:
             run_tag = f"c{clk:.2f}".replace(".", "p")
+            design_nickname = f"{design_name}_{run_tag}"
             design_dir = flow_root / "designs" / pdk / experiment / design_name / run_tag
             verilog_glob = f"./designs/src/{experiment}/{design_name}/*.v"
             sdc_rel = Path("designs") / pdk / experiment / design_name / run_tag / "constraint.sdc"
@@ -103,6 +105,7 @@ def plan_cases(
 
             cfg_text = cfg_template.render(
                 design_name=design_name,
+                design_nickname=design_nickname,
                 platform=pdk,
                 verilog_glob=verilog_glob,
                 sdc_path=f"./{sdc_rel}",
@@ -124,6 +127,7 @@ def plan_cases(
                     pdk=pdk,
                     clock_ns=clk,
                     run_tag=run_tag,
+                    design_nickname=design_nickname,
                     config_dir=design_dir,
                     config_path=config_path,
                     sdc_path=sdc_path,
@@ -161,7 +165,6 @@ def planned_command(flow_root: Path, case: FlowCase, experiment: str, design_nam
         "-C",
         str(flow_root),
         f"DESIGN_CONFIG=./designs/{case.pdk}/{experiment}/{design_name}/{case.run_tag}/config.mk",
-        f"FLOW_VARIANT={case.run_tag}",
     ]
 
 
@@ -174,14 +177,11 @@ def run_flow(
     verbose: bool = False,
 ) -> None:
     cmd = planned_command(flow_root, case, experiment, design_name)
-    env = os.environ.copy()
-    env["FLOW_VARIANT"] = case.run_tag
     LOG.info("Running flow: %s", " ".join(cmd))
     if dry_run:
         return
     proc = subprocess.run(
         cmd,
-        env=env,
         stdout=None if verbose else subprocess.PIPE,
         stderr=None if verbose else subprocess.STDOUT,
     )
@@ -217,6 +217,8 @@ def assign_metrics(flow_root: Path, experiment: str, design_name: str, case: Flo
 
 def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: FlowCase) -> Dict[str, float]:
     paths = _metric_paths(flow_root, experiment, design_name, case)
+    if not any(p.exists() for p in (paths["report"], paths["route"], paths["cts"], paths["place"])):
+        return {}
     data = _load_json(paths["report"])
     for stage_path in (paths["route"], paths["cts"], paths["place"]):
         stage_data = _load_json(stage_path)
@@ -251,10 +253,52 @@ def parse_metrics(flow_root: Path, experiment: str, design_name: str, case: Flow
         "wns": [
             "finish__timing__setup__wns",
             "timing__setup__wns",
+            "finish__timing__setup__ws",
+            "timing__setup__ws",
         ],
         "tns": [
             "finish__timing__setup__tns",
             "timing__setup__tns",
+        ],
+        "power_total": [
+            "finish__power__total",
+            "power__total",
+        ],
+        "power_internal": [
+            "finish__power__internal__total",
+            "power__internal__total",
+        ],
+        "power_switching": [
+            "finish__power__switching__total",
+            "power__switching__total",
+        ],
+        "power_leakage": [
+            "finish__power__leakage__total",
+            "power__leakage__total",
+        ],
+        "vdd_voltage_worst": [
+            "finish__design_powergrid__voltage__worst__net:VDD__corner:default",
+            "design_powergrid__voltage__worst__net:VDD__corner:default",
+        ],
+        "vdd_drop_avg": [
+            "finish__design_powergrid__drop__average__net:VDD__corner:default",
+            "design_powergrid__drop__average__net:VDD__corner:default",
+        ],
+        "vdd_drop_worst": [
+            "finish__design_powergrid__drop__worst__net:VDD__corner:default",
+            "design_powergrid__drop__worst__net:VDD__corner:default",
+        ],
+        "vss_voltage_worst": [
+            "finish__design_powergrid__voltage__worst__net:VSS__corner:default",
+            "design_powergrid__voltage__worst__net:VSS__corner:default",
+        ],
+        "vss_drop_avg": [
+            "finish__design_powergrid__drop__average__net:VSS__corner:default",
+            "design_powergrid__drop__average__net:VSS__corner:default",
+        ],
+        "vss_drop_worst": [
+            "finish__design_powergrid__drop__worst__net:VSS__corner:default",
+            "design_powergrid__drop__worst__net:VSS__corner:default",
         ],
     }
     for metric, keys in key_map.items():
@@ -296,6 +340,16 @@ def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: boo
         "wns",
         "tns",
         "wirelength",
+        "power_total",
+        "power_internal",
+        "power_switching",
+        "power_leakage",
+        "vdd_voltage_worst",
+        "vdd_drop_avg",
+        "vdd_drop_worst",
+        "vss_voltage_worst",
+        "vss_drop_avg",
+        "vss_drop_worst",
     ]
     for col in required_cols:
         if col not in df.columns:
@@ -310,19 +364,67 @@ def emit_metrics(rows: List[Dict[str, object]], metrics_path: Path, dry_run: boo
     return df
 
 
+def load_metrics_jsonl(metrics_path: Path) -> pd.DataFrame:
+    if not metrics_path.exists():
+        return pd.DataFrame()
+    return pd.read_json(metrics_path, lines=True)
+
+
 def terminal_table(df: pd.DataFrame) -> str:
     if df.empty:
         return "No metrics (possibly dry-run)."
-    cols = ["pdk", "clock_ns", "status", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
-    df_disp = df.reindex(columns=cols)
+    cols = [
+        "pdk",
+        "clock_ns",
+        "status",
+        "gds_area",
+        "synth_area",
+        "synth_cell_count",
+        "wns",
+        "tns",
+        "wirelength",
+        "power_total",
+        "power_internal",
+        "power_switching",
+        "power_leakage",
+        "vdd_voltage_worst",
+        "vdd_drop_avg",
+        "vdd_drop_worst",
+        "vss_voltage_worst",
+        "vss_drop_avg",
+        "vss_drop_worst",
+    ]
+    extra_cols = [c for c in df.columns if c not in cols]
+    df_disp = df.reindex(columns=cols + extra_cols)
     return df_disp.to_string(index=False)
 
 
 def latex_table(df: pd.DataFrame) -> str:
     if df.empty:
         return "% No metrics (possibly dry-run)."
-    cols = ["pdk", "clock_ns", "status", "gds_area", "synth_area", "synth_cell_count", "wns", "tns", "wirelength"]
-    df_disp = df.reindex(columns=cols)
+    cols = [
+        "pdk",
+        "clock_ns",
+        "status",
+        "gds_area",
+        "synth_area",
+        "synth_cell_count",
+        "wns",
+        "tns",
+        "wirelength",
+        "power_total",
+        "power_internal",
+        "power_switching",
+        "power_leakage",
+        "vdd_voltage_worst",
+        "vdd_drop_avg",
+        "vdd_drop_worst",
+        "vss_voltage_worst",
+        "vss_drop_avg",
+        "vss_drop_worst",
+    ]
+    extra_cols = [c for c in df.columns if c not in cols]
+    df_disp = df.reindex(columns=cols + extra_cols)
     return df_disp.to_latex(index=False, float_format="%.3f")
 
 
@@ -364,7 +466,13 @@ def _metric_paths(flow_root: Path, experiment: str, design_name: str, case: Flow
 
 
 def metric_log_dir(flow_root: Path, design_name: str, case: FlowCase) -> Path:
-    return flow_root / "logs" / case.pdk / design_name / case.run_tag
+    nickname = case.design_nickname or design_name
+    base_dir = flow_root / "logs" / case.pdk / nickname
+    candidate = base_dir / case.run_tag
+    if candidate.exists():
+        return candidate
+    fallback = base_dir / "base"
+    return fallback if fallback.exists() else candidate
 
 
 def _load_json(path: Path) -> Dict[str, float]:
